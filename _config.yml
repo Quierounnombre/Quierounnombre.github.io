@@ -1,5 +1,20 @@
-remote_theme: jekyll-themes/dark
+remote_theme: mmistakes/minimal-mistakes
 plugins:
   - jekyll-remote-theme
+  - jekyll-include-cache
 title: Vicente García Andrade
 description: Fractional CTO & Tech Strategist
+show_downloads: false
+minimal_mistakes_skin: "dark"
+search: true
+timezone: UTC+1
+locale: en-US
+
+footer:
+  links:
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://linkedin.com/in/yourprofile"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/yourusername"
