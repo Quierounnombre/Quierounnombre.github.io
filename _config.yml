@@ -1,3 +1,5 @@
-theme: jekyll-theme-minimal
-title: Quierounnombre
-description: HOLAAAAAAA
+remote_theme: pages-themes/midnight@latest
+plugins:
+  - jekyll-remote-theme
+title: Your Name
+description: Fractional CTO & Tech Strategist
