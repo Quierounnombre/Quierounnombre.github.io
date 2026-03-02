@@ -1,5 +1,5 @@
-remote_theme: pages-themes/midnight@latest
+remote_theme: pages-themes/midnight
 plugins:
   - jekyll-remote-theme
-title: Your Name
+title: Vicente García Andrade
 description: Fractional CTO & Tech Strategist
