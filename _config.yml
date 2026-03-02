@@ -1,4 +1,4 @@
-remote_theme: pages-themes/midnight
+remote_theme: jekyll-themes/dark
 plugins:
   - jekyll-remote-theme
 title: Vicente García Andrade
