@@ -19,12 +19,12 @@ footer:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/Quierounnombre"
 
-# Site author
+# YOUUU
 author:
   name: "Vicente García Andrade"
-  avatar: "/assets/images/avatar.jpg"  # Add your photo later
+  avatar: "/assets/images/avatar.png"  #TODO: take a good photo
   bio: "Fractional CTO & Tech Strategist specializing in backend systems and technical leadership."
-  location: "Spain"
+  location: "Madrid, Spain"
   links:
     - label: "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
