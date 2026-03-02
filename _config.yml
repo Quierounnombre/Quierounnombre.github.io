@@ -21,6 +21,7 @@ footer:
 
 # YOUUU
 author:
+  home: "/about/"
   name: "Vicente García Andrade"
   avatar: "/assets/images/avatar.png"  #TODO: take a good photo
   bio: "Fractional CTO & Tech Strategist specializing in backend systems and technical leadership."
