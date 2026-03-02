@@ -14,7 +14,27 @@ footer:
   links:
     - label: "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
-      url: "https://linkedin.com/in/yourprofile"
+      url: "https://www.linkedin.com/in/vicente-garcia-andrade/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      url: "https://github.com/yourusername"
+      url: "https://github.com/Quierounnombre"
+
+# Site author
+author:
+  name: "Vicente García Andrade"
+  avatar: "/assets/images/avatar.jpg"  # Add your photo later
+  bio: "Fractional CTO & Tech Strategist specializing in backend systems and technical leadership."
+  location: "Spain"
+  links:
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/vicente-garcia-andrade/"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/Quierounnombre"
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
