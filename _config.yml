@@ -9,7 +9,6 @@ show_downloads: false
 minimal_mistakes_skin: "dark"
 timezone: UTC+1
 locale: en-US
-logo: "/assets/images/avatar.png"
 enable_copy_code_button: true
 
 #SEARCH ENGINE
@@ -23,16 +22,6 @@ defaults:
       type: posts
     values:
       read_time: true
-
-footer:
-  links:
-    - label: "LinkedIn"
-      icon: "fab fa-fw fa-linkedin"
-      url: "https://www.linkedin.com/in/vicente-garcia-andrade/"
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/Quierounnombre"
-  since: "2026"
 
 # YOUUU
 author:
