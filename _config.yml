@@ -2,14 +2,12 @@ remote_theme: mmistakes/minimal-mistakes
 plugins:
   - jekyll-remote-theme
   - jekyll-include-cache
-title: Vicente García Andrade
-name: Vicente GarcíA Andrade
-description: Fractional CTO & Tech Strategist
 show_downloads: false
 minimal_mistakes_skin: "dark"
 timezone: UTC+1
 locale: en-US
 enable_copy_code_button: true
+masthead_title: "Vicente García Andrade"
 
 #SEARCH ENGINE
 search: true
@@ -23,9 +21,8 @@ defaults:
     values:
       read_time: true
 
-# YOUUU
 author:
-  home: "/about/"
+  home: "/"
   name: "Vicente García Andrade"
   avatar: "/assets/images/avatar.png"  #TODO: take a good photo
   bio: "Fractional CTO & Tech Strategist specializing in backend systems and technical leadership."
