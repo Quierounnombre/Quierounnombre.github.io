@@ -4,26 +4,39 @@ layout: single
 author_profile: true
 ---
 
-I build the technology that turns your idea into a product.
+I help non-technical founders avoid mistakes that kill their business.
 
 ---
 
-What drives me is moving the needle. No amount of accomplished deadlines will matter if the user isn't thrilled by your product.
+Most founders waste time on the wrong feature, or over-engineering tech that no one uses. Both are a expensive and painfull expirience.
 
-For me building requires strong fundations, behind every great product there is boring and reliable tech, and that requires a not so boring and reliable team ;).
+I have been there at SayFly! and can help you avoid those mistakes.
+
+**How can i help your first product:**
+- **Define** A full week understanding you, your clients, and what should be done first (Free).
+- **Build** From 6 to 8 weeks creating a minimal product that solves a need. Simple and Reliable.
+- **Handoff** Once we finish I Help you hire a guy that can replace me, with clear documentation and training.
+
+**Why me?**
+
+During my time in SayFly! we create an app that not even our mothers cared about. We
+obsessed over UI while ignoring wheter anyone wanted it. we ended up closing, I Know that pain.
 
 I bridge a strong foundation with cutting every nice-to-have to prioritize raw value.
 
-**I can help you with:**
+What drives me is moving the needle. No amount of accomplished deadlines will matter if the user isn't thrilled by your product.
 
-- **Fractional CTO.** I join your team part-time and own the technical direction.
-- **MVP development.** I define and build your first product. Fast enough to test, solid enough to grow.
-- **Technical advisory.** Investor pitch coming up? I will make sure your tech story holds up under scrutiny.
+For me building requires strong foundations, behind every great product there is boring and reliable tech, and that requires a not so boring and reliable team ;).
 
-I have done this under pressure. At SayFly! I took over a live platform when the previous CTO left, kept it running, shipped new features, and handed it off clean.
+**Capabilitys**
 
-I'm equally comfortable debugging memory in C, designing REST APIs, or talking through your business model with investors.
+Full Stack: Databases, APIs, Infra, Deployments, everything except UI/UX can be under my control.
+More info on specific tooling in my [github](https://github.com/Quierounnombre)
+
+**How much**
+1500€ per week of work. Usually 6-8 weeks.
+Duration may change according to the project.
 
 *Based in Madrid. Working remotely with founders everywhere.*
 
-**[Send me an email →](https://mail.google.com/mail/?view=cm&to=vicengandrade@gmail.com)**
+**[Email me with your idea→](https://mail.google.com/mail/?view=cm&to=vicengandrade@gmail.com)**
