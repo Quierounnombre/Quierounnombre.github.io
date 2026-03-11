@@ -32,9 +32,9 @@ More info on specific tooling in my [github](https://github.com/Quierounnombre)
 
 ## **Cost**
 
-Billed per project, around 9000€ to 12000€, depending on scope..
-Usually it last about 6-8 weeks of work, with a prototype on the first week.
-Duration and price may change according to the project.
+Billed per project, around 9000€ to 12000€, depending on scope.
+
+Prototype in week one. Done in 6 to 8.
 
 *Based in Madrid. Working remotely with founders everywhere.*
 
