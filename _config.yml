@@ -17,9 +17,11 @@ lunr:
 defaults:
   - scope:
       path: ""
-      type: posts
+      type: post
     values:
       read_time: true
+      author_profile: true
+      layout: single
 
 author:
   home: "/"
