@@ -1,5 +1,5 @@
 ---
-title: "What to do from a MVP"
+title: "What to do for a MVP"
 published: true
 layout: single
 tags: [startup, mvp]
