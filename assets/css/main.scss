@@ -104,3 +104,9 @@ footer.page__footer,
 .page__footer a:hover {
 	color: #fff !important;
 }
+
+:not(pre) > code.highlighter-rouge {
+	background: #2b2b3b;
+	color: var(--text);
+	border: none;
+}

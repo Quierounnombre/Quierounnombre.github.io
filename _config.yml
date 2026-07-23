@@ -47,3 +47,4 @@ highlighter: rouge
 kramdown:
   input: GFM
   syntax_highlighter: rouge
+  tab_width: 4

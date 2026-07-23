@@ -4,30 +4,33 @@ layout: single
 author_profile: true
 ---
 
-I help non-technical founders build the right app.
+## Quien soy
 
-Most founders waste time on the wrong feature, building tech that no one uses. This is an expensive and painful experience.
 
-During my time in SayFly! we created an app that not even our mothers cared about. We
-obsessed over UI while ignoring whether anyone wanted it. We ended up closing, I know that pain.
+Tengo altas capacidades y eso se refleja en una curiosidad infinita.
 
-## **How can I help your first product:**
-- **Define** A full week understanding you, your clients, and what should be done first.
-- **Build** From 6 to 8 weeks, iterating over a MVP that solves a need. Simple and Reliable.
-- **Handoff** Once we finish I will help you hire someone to replace me, with clear documentation and training.
 
-## **Capabilities**
+Empecé con 8 años, a programar en HTML + CSS y un poquito de JS. Desde entonces he tocado robótica con Arduino, Aplicaciones móviles, Programación de bajo nivel, Backend y Ciber.
 
-Full Stack. In case it is needed I will add a UI/UX expert into the project.
 
-More info on specific tooling in my [github](https://github.com/Quierounnombre)
+Mi otra gran pasión, es entender los procesos decisorios, es decir, entender porque en un mundo de posibilidades infinitas las personas escogen X o Y.
 
-## **Cost**
 
-Billed per project, 9000€ to 12000€, depending on scope.
+Con el tiempo me he dado cuenta que no solo es hacer tecnología vía software, sino también hacer tecnología social, convencer y enseñar a las personas de usar
+tu herramienta, es igual o más importante que crear.
 
-Prototype in week one. Done in 6 to 8.
 
-*Based in Madrid. Working remotely with founders everywhere.*
+## Que me gusta
 
-**[Tell me about your idea→](https://www.linkedin.com/in/vicente-garcia-andrade/)**
+
+### Deportes
+- Voley, prefiero pista, de colocador.
+- Fútbol, sobre todo fútbol sala, de portero.
+
+
+### Juegos de mesa
+- Root y control de área, darse de palos es siempre divertido.
+- Eurogames/worker placement, mi auténtica debilidad, 1000 opciones y sólo puedes coger 3.
+
+
+**[Hablamos!](https://www.linkedin.com/in/vicente-garcia-andrade/)**
