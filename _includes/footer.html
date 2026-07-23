@@ -13,3 +13,26 @@
 		<a href="/certificates">Certificados y logros</a>.
 	</div>
 </footer>
+
+<script>
+	const bio = document.querySelector('.author__bio');
+	if (bio) {
+		const label = document.createElement('div');
+		label.textContent = 'Madrid (CET/CEST)';
+		label.style.color = 'var(--text-muted)';
+		label.style.fontSize = '0.8em';
+		label.style.marginTop = '0.5em';
+		bio.appendChild(label);
+
+		const clock = document.createElement('div');
+		clock.style.color = 'var(--cyan)';
+		clock.style.marginTop = '0.4em';
+		bio.appendChild(clock);
+
+		const tick = () => {
+			clock.textContent = new Date().toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid' });
+		};
+		tick();
+		setInterval(tick, 1000);
+	}
+</script>

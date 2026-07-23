@@ -26,8 +26,8 @@ defaults:
 author:
   home: "/"
   name: "Vicente García Andrade"
-  avatar: "/assets/images/avatar.png"  #TODO: take a good photo
-  bio: "MVP development for non-technical founders."
+  avatar: "/assets/images/avatar_2.jpeg"
+  bio: "Backend & systems engineer. Building Apto. Go/C++/Python, auth systems, reproducible infra. 42 Madrid, ESCP"
   location: "Madrid, Spain"
   links:
     - label: "LinkedIn"
@@ -36,6 +36,9 @@ author:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/Quierounnombre"
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope"
+      url: "mailto:vicengandrade+miweb@gmail.com"
 
 social:
   links:
