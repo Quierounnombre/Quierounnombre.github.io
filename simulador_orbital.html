@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Simulador Orbital — Terminadora LEO</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000205; font-family: monospace; overflow: hidden; }
+
+#layout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  height: 100vh;
+}
+
+#view-wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  background: #000205;
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.07);
+  overflow: hidden;
+  cursor: crosshair;
+}
+canvas#view { display: block; width: 100%; height: 100%; }
+
+#hud-tl {
+  position: absolute; top: 9px; left: 11px;
+  font-size: 11px; line-height: 1.9;
+  color: rgba(255,255,255,0.88); pointer-events: none;
+}
+#hud-tr {
+  position: absolute; top: 9px; right: 11px;
+  font-size: 11px; line-height: 1.9; text-align: right;
+  color: rgba(255,255,255,0.88); pointer-events: none;
+}
+#hud-bl {
+  position: absolute; bottom: 9px; left: 11px;
+  font-size: 10px; line-height: 1.7;
+  color: rgba(255,255,255,0.55); pointer-events: none;
+}
+#hud-br {
+  position: absolute; bottom: 9px; right: 11px;
+  font-size: 10px; line-height: 1.7; text-align: right;
+  color: rgba(255,255,255,0.55); pointer-events: none;
+  max-width: 260px;
+}
+.hud-val  { color: #fff; font-weight: bold; }
+.hud-ok   { color: #50d090; }
+.hud-warn { color: #ffaa40; }
+.hud-hot  { color: #ff6666; }
+.hud-sat1 { color: #44aaff; }
+.hud-sat2 { color: #ff88aa; }
+.hud-dim  { color: rgba(255,255,255,0.38); }
+
+#zoom-box {
+  position: absolute; border: 1px solid rgba(255,220,60,0.5);
+  border-radius: 5px; overflow: hidden; pointer-events: none; display: none;
+  background: #000205;
+}
+canvas#zoom-canvas { display: block; }
+#zoom-label {
+  position: absolute; bottom: 3px; right: 5px;
+  font-size: 9px; color: rgba(255,220,60,0.7); pointer-events: none;
+}
+
+#ctrl-bar {
+  flex: 0 0 auto;
+  display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;
+  background: #0d1117;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 6px 12px;
+  overflow: hidden;
+}
+.ctrl-group { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.ctrl-l { font-size: 10px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+input[type=range] { width: 72px; accent-color: #50d090; }
+.ctrl-v { font-size: 10px; color: #fff; min-width: 28px; }
+.vsep { width: 0.5px; height: 18px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+.btn {
+  padding: 4px 9px; border: 0.5px solid rgba(255,255,255,0.2);
+  border-radius: 5px; background: transparent; color: rgba(255,255,255,0.8);
+  font-size: 10px; cursor: pointer; font-family: monospace;
+  white-space: nowrap; flex-shrink: 0; transition: background 0.12s;
+}
+.btn:hover { background: rgba(255,255,255,0.08); }
+.btn.on { background: rgba(80,208,144,0.15); border-color: #50d090; color: #50d090; }
+
+#det-row {
+  flex: 0 0 78px;
+  display: flex; gap: 4px;
+}
+.det-wrap {
+  flex: 1; position: relative; background: #00030c;
+  border-radius: 8px; border: 0.5px solid rgba(255,255,255,0.07); overflow: hidden;
+}
+.det-wrap canvas { display: block; width: 100%; height: 100%; }
+.det-label { position: absolute; top: 4px; left: 7px; font-size: 9px; pointer-events: none; color: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+<div id="layout">
+
+  <div id="view-wrap">
+    <canvas id="view"></canvas>
+
+    <div id="hud-tl">
+      <div><span class="hud-dim">T+</span> <span class="hud-val" id="h-time">00:00</span> &nbsp;·&nbsp; <span style="color:rgba(80,220,160,0.9)">TERMINADORA — TRIANGULACIÓN LEO</span></div>
+      <div><span class="hud-dim">SAT-A</span> <span id="h-sha" class="hud-sat1">● SOMBRA</span> &nbsp;·&nbsp; <span class="hud-dim">SAT-B</span> <span id="h-shb" class="hud-sat2">● SOMBRA</span></div>
+      <div><span class="hud-dim">Baseline</span> &nbsp;<span class="hud-val" id="h-base">--</span></div>
+    </div>
+
+    <div id="hud-tr">
+      <div><span class="hud-dim">FOV dual &nbsp;</span><span class="hud-warn" id="h-both">0</span></div>
+      <div><span class="hud-dim">Triangulados &nbsp;</span><span class="hud-ok" id="h-tri">0</span></div>
+      <div><span class="hud-dim">Error medio &nbsp;</span><span class="hud-ok" id="h-err">--</span></div>
+    </div>
+
+    <div id="hud-bl">
+      <div><span style="color:#ff9944">■</span> Iluminado &nbsp;<span style="color:#223">■</span> Sombra &nbsp;<span style="color:#ffcc44">■</span> FOV dual &nbsp;<span style="color:#50d090">■</span> Triangulado</div>
+      <div><span style="color:rgba(255,220,80,0.6)">■</span> Zona solar &nbsp;<span style="color:rgba(120,200,255,0.5)">╌</span> Terminadora &nbsp;<span style="color:#44aaff">━</span> SAT-A &nbsp;<span style="color:#ff88aa">━</span> SAT-B</div>
+    </div>
+
+    <div id="hud-br">
+      <div class="hud-dim" style="margin-bottom:2px">— detecciones —</div>
+      <div id="h-log"></div>
+    </div>
+
+    <div id="zoom-box">
+      <canvas id="zoom-canvas"></canvas>
+      <div id="zoom-label">4×</div>
+    </div>
+  </div>
+
+  <div id="ctrl-bar">
+    <div class="ctrl-group"><span class="ctrl-l">Vel.</span><input type="range" min="0.2" max="6" step="0.1" value="1" id="spd"><span class="ctrl-v" id="spd-v">1.0×</span></div>
+    <div class="vsep"></div>
+    <div class="ctrl-group"><span class="ctrl-l">Escombros</span><input type="range" min="10" max="90" step="1" value="35" id="nobj"><span class="ctrl-v" id="nobj-v">35</span></div>
+    <div class="vsep"></div>
+    <div class="ctrl-group"><span class="ctrl-l">FOV</span><input type="range" min="6" max="35" step="1" value="14" id="fov"><span class="ctrl-v" id="fov-v">14°</span></div>
+    <div class="vsep"></div>
+    <div class="ctrl-group"><span class="ctrl-l">Sep. sats.</span><input type="range" min="10" max="80" step="1" value="30" id="sep"><span class="ctrl-v" id="sep-v">30°</span></div>
+    <div class="vsep"></div>
+    <div class="ctrl-group"><span class="ctrl-l">Zoom lupa</span><input type="range" min="2" max="8" step="0.5" value="4" id="zoomlvl"><span class="ctrl-v" id="zoomlvl-v">4×</span></div>
+    <div class="vsep"></div>
+    <button class="btn on" id="btn-play">⏸ Pausa</button>
+    <button class="btn on" id="btn-trails">Estelas</button>
+    <button class="btn on" id="btn-tri">Triangular</button>
+    <button class="btn" id="btn-reset">↺ Reset</button>
+  </div>
+
+  <div id="det-row">
+    <div class="det-wrap"><canvas id="det-a"></canvas><div class="det-label" style="color:rgba(68,170,255,0.8)">SAT-A — Detector CCD</div></div>
+    <div class="det-wrap"><canvas id="det-b"></canvas><div class="det-label" style="color:rgba(255,136,170,0.8)">SAT-B — Detector CCD</div></div>
+  </div>
+
+</div>
+<script>
+const vc=document.getElementById('view'),vx=vc.getContext('2d');
+function sync(){const r=vc.parentElement.getBoundingClientRect();vc.width=Math.round(r.width);vc.height=Math.round(r.height);}
+sync();
+window.addEventListener('resize',sync);
+
+const zoomBox=document.getElementById('zoom-box'),zoomCanvas=document.getElementById('zoom-canvas'),zoomCtx=zoomCanvas.getContext('2d');
+const ZSIZE=160;zoomCanvas.width=ZSIZE;zoomCanvas.height=ZSIZE;
+zoomBox.style.width=ZSIZE+'px';zoomBox.style.height=ZSIZE+'px';
+
+let mouseX=-999,mouseY=-999,mouseIn=false;
+const wrap=document.getElementById('view-wrap');
+wrap.addEventListener('mousemove',e=>{
+  const r=wrap.getBoundingClientRect(),sx=vc.width/r.width,sy=vc.height/r.height;
+  mouseX=(e.clientX-r.left)*sx;mouseY=(e.clientY-r.top)*sy;
+  mouseIn=true;zoomBox.style.display='block';
+  const mx=e.clientX-r.left,my=e.clientY-r.top,m=14,bp=ZSIZE;
+  let l=mx+m,tp=my+m;
+  if(l+bp>r.width-m)l=mx-bp-m;if(tp+bp>r.height-m)tp=my-bp-m;
+  if(l<m)l=m;if(tp<m)tp=m;
+  zoomBox.style.left=l+'px';zoomBox.style.top=tp+'px';
+});
+wrap.addEventListener('mouseleave',()=>{mouseIn=false;zoomBox.style.display='none';});
+
+function drawZoom(){
+  if(!mouseIn)return;
+  const zl=parseFloat(document.getElementById('zoomlvl').value);
+  document.getElementById('zoom-label').textContent=zl.toFixed(1)+'×';
+  const sw=ZSIZE/zl;
+  zoomCtx.clearRect(0,0,ZSIZE,ZSIZE);
+  zoomCtx.drawImage(vc,mouseX-sw/2,mouseY-sw/2,sw,sw,0,0,ZSIZE,ZSIZE);
+  zoomCtx.strokeStyle='rgba(255,220,60,0.35)';zoomCtx.lineWidth=0.8;
+  zoomCtx.beginPath();zoomCtx.moveTo(ZSIZE/2,0);zoomCtx.lineTo(ZSIZE/2,ZSIZE);zoomCtx.stroke();
+  zoomCtx.beginPath();zoomCtx.moveTo(0,ZSIZE/2);zoomCtx.lineTo(ZSIZE,ZSIZE/2);zoomCtx.stroke();
+  zoomCtx.strokeStyle='rgba(255,220,60,0.2)';zoomCtx.lineWidth=1.2;zoomCtx.strokeRect(0,0,ZSIZE,ZSIZE);
+}
+
+let t=0,paused=false,showTrails=true,showTri=true,triangulated=0,logLines=[];
+let objects=[],stars=null,sunAngle=-Math.PI/2;
+const W=()=>vc.width,H=()=>vc.height,CX=()=>vc.width/2,CY=()=>vc.height/2;
+const ER=()=>Math.min(vc.width,vc.height)*0.13;
+function rnd(a,b){return a+Math.random()*(b-a);}
+
+function makeObjects(n){
+  objects=[];
+  for(let i=0;i<n;i++){
+    const er=ER(),r=rnd(er*1.25,er*3.1),ang=Math.random()*Math.PI*2;
+    const spd=rnd(0.0005,0.0014)*(Math.random()<0.5?1:-1);
+    const sz=Math.random()<0.3?rnd(2.5,4.5):rnd(1,2.4);
+    objects.push({id:'D'+String(i).padStart(3,'0'),r,ang,spd,sz,trail:[],triangulated:false,hitsAB:0,posErr:0});
+  }
+}
+
+function ensureStars(){
+  if(stars&&stars._w===W())return;
+  stars=[];stars._w=W();
+  for(let i=0;i<240;i++)stars.push([rnd(0,W()),rnd(0,H()),rnd(0.2,1.3),Math.random()]);
+}
+
+const getSatA=()=>{const ang=sunAngle+Math.PI/2+0.07,R=ER()*1.25;return[CX()+Math.cos(ang)*R,CY()+Math.sin(ang)*R,ang,R];};
+const getSatB=()=>{const s=parseFloat(document.getElementById('sep').value)*Math.PI/180,ang=sunAngle+Math.PI/2+0.07+s,R=ER()*1.27;return[CX()+Math.cos(ang)*R,CY()+Math.sin(ang)*R,ang,R];};
+const getXY=o=>[CX()+Math.cos(o.ang)*o.r,CY()+Math.sin(o.ang)*o.r];
+
+function isIllum(o){
+  const sx=Math.cos(sunAngle),sy=Math.sin(sunAngle);
+  const ox=CX()+Math.cos(o.ang)*o.r-CX(),oy=CY()+Math.sin(o.ang)*o.r-CY();
+  const dot=ox*sx+oy*sy;
+  if(dot<0){const px=ox-dot*sx,py=oy-dot*sy;if(Math.hypot(px,py)<ER())return false;}
+  return true;
+}
+function inShad(px,py){
+  const dx=Math.cos(sunAngle),dy=Math.sin(sunAngle),ox=px-CX(),oy=py-CY(),dot=ox*dx+oy*dy;
+  if(dot<0){const ppx=ox-dot*dx,ppy=oy-dot*dy;if(Math.hypot(ppx,ppy)<ER())return true;}
+  return false;
+}
+function inFOV(o,sx,sy,axis,fovR){
+  const[ox,oy]=getXY(o),dx=ox-sx,dy=oy-sy,d=Math.hypot(dx,dy);if(d<1)return false;
+  const dot=(dx/d)*Math.cos(axis)+(dy/d)*Math.sin(axis);
+  return Math.acos(Math.max(-1,Math.min(1,dot)))<fovR;
+}
+function rayX(ax,ay,adx,ady,bx,by,bdx,bdy){
+  const c=adx*bdy-ady*bdx;if(Math.abs(c)<1e-4)return null;
+  const t2=((bx-ax)*bdy-(by-ay)*bdx)/c;return[ax+adx*t2,ay+ady*t2];
+}
+
+const hLog=document.getElementById('h-log');
+function pushLog(m){logLines.unshift(m);if(logLines.length>4)logLines.pop();hLog.innerHTML=logLines.join('<br>');}
+
+document.getElementById('spd').addEventListener('input',function(){document.getElementById('spd-v').textContent=parseFloat(this.value).toFixed(1)+'×';});
+document.getElementById('nobj').addEventListener('input',function(){document.getElementById('nobj-v').textContent=this.value;makeObjects(parseInt(this.value));triangulated=0;logLines=[];hLog.textContent='';});
+document.getElementById('fov').addEventListener('input',function(){document.getElementById('fov-v').textContent=this.value+'°';});
+document.getElementById('sep').addEventListener('input',function(){document.getElementById('sep-v').textContent=this.value+'°';});
+document.getElementById('zoomlvl').addEventListener('input',function(){document.getElementById('zoomlvl-v').textContent=parseFloat(this.value).toFixed(1)+'×';});
+document.getElementById('btn-play').addEventListener('click',function(){paused=!paused;this.textContent=paused?'▶ Reanudar':'⏸ Pausa';this.classList.toggle('on',!paused);});
+document.getElementById('btn-trails').addEventListener('click',function(){showTrails=!showTrails;this.classList.toggle('on',showTrails);});
+document.getElementById('btn-tri').addEventListener('click',function(){showTri=!showTri;this.classList.toggle('on',showTri);});
+document.getElementById('btn-reset').addEventListener('click',function(){makeObjects(parseInt(document.getElementById('nobj').value));triangulated=0;logLines=[];hLog.textContent='';t=0;});
+
+makeObjects(35);
+
+function drawSolarZone(sunX,sunY){
+  const er=ER(),cx=CX(),cy=CY();
+  vx.save();
+  const dsx=cx-sunX,dsy=cy-sunY,dist=Math.hypot(dsx,dsy);
+  const hA=Math.asin(Math.min(1,er/dist)),s2e=Math.atan2(dsy,dsx),fL=W()*1.5;
+  vx.beginPath();vx.moveTo(sunX,sunY);vx.arc(sunX,sunY,fL,s2e-hA,s2e+hA);vx.closePath();
+  vx.arc(cx,cy,er,0,Math.PI*2,true);
+  const lx=cx+Math.cos(sunAngle)*er,ly=cy+Math.sin(sunAngle)*er;
+  const g=vx.createRadialGradient(lx,ly,0,lx,ly,fL*0.5);
+  g.addColorStop(0,'rgba(255,220,80,0.18)');g.addColorStop(0.2,'rgba(255,200,60,0.09)');
+  g.addColorStop(0.5,'rgba(255,180,40,0.04)');g.addColorStop(1,'rgba(255,180,40,0)');
+  vx.fillStyle=g;vx.fill('evenodd');
+  const tpOff=Math.PI/2-hA,tp1a=s2e+Math.PI+tpOff,tp2a=s2e+Math.PI-tpOff;
+  const tp1x=cx+Math.cos(tp1a)*er,tp1y=cy+Math.sin(tp1a)*er;
+  const tp2x=cx+Math.cos(tp2a)*er,tp2y=cy+Math.sin(tp2a)*er;
+  const d1x=tp1x-sunX,d1y=tp1y-sunY,d1=Math.hypot(d1x,d1y);
+  const d2x=tp2x-sunX,d2y=tp2y-sunY,d2=Math.hypot(d2x,d2y);
+  vx.setLineDash([6,5]);vx.lineWidth=0.9;vx.strokeStyle='rgba(255,210,60,0.35)';
+  vx.beginPath();vx.moveTo(tp1x,tp1y);vx.lineTo(tp1x+(d1x/d1)*fL,tp1y+(d1y/d1)*fL);vx.stroke();
+  vx.beginPath();vx.moveTo(tp2x,tp2y);vx.lineTo(tp2x+(d2x/d2)*fL,tp2y+(d2y/d2)*fL);vx.stroke();
+  vx.setLineDash([]);vx.restore();
+}
+
+function drawSat(x,y,angle,col,label){
+  const s=Math.min(W(),H())/520;
+  vx.save();vx.translate(x,y);vx.rotate(angle+Math.PI);
+  vx.fillStyle='#ddeeff';vx.fillRect(-5*s,-3*s,10*s,6*s);
+  vx.fillStyle=col==='A'?'rgba(100,180,255,0.85)':'rgba(255,160,200,0.85)';
+  vx.fillRect(-2*s,-10*s,4*s,7*s);vx.fillRect(-2*s,3*s,4*s,7*s);
+  vx.fillStyle='rgba(220,240,255,0.9)';vx.fillRect(5*s,-2*s,4*s,4*s);
+  vx.restore();
+  vx.beginPath();vx.arc(x,y,11*s,0,Math.PI*2);
+  vx.strokeStyle=col==='A'?'rgba(68,170,255,0.5)':'rgba(255,136,170,0.5)';vx.lineWidth=1.1*s;vx.stroke();
+  vx.fillStyle=col==='A'?'rgba(100,190,255,0.95)':'rgba(255,150,190,0.95)';
+  vx.font='bold '+Math.round(9*s)+'px monospace';vx.fillText(label,x-4*s,y-14*s);
+}
+
+function drawCone(sx,sy,axis,fovR,fill,stroke,dash){
+  const cL=Math.min(W(),H())*0.56;
+  vx.save();vx.translate(sx,sy);vx.rotate(axis);
+  vx.beginPath();vx.moveTo(0,0);vx.lineTo(cL*Math.cos(-fovR),cL*Math.sin(-fovR));
+  vx.arc(0,0,cL,-fovR,fovR);vx.lineTo(0,0);
+  vx.fillStyle=fill;vx.fill();vx.strokeStyle=stroke;vx.lineWidth=0.85;vx.stroke();
+  vx.beginPath();vx.moveTo(0,0);vx.lineTo(cL,0);
+  vx.strokeStyle=dash;vx.setLineDash([5,7]);vx.lineWidth=0.75;vx.stroke();
+  vx.setLineDash([]);vx.restore();
+}
+
+function drawOverlap(ax,ay,aA,bx,by,bA,fovR){
+  const cL=Math.min(W(),H())*0.56;
+  vx.save();
+  vx.beginPath();vx.moveTo(ax,ay);vx.lineTo(ax+cL*Math.cos(aA-fovR),ay+cL*Math.sin(aA-fovR));
+  vx.arc(ax,ay,cL,aA-fovR,aA+fovR);vx.lineTo(ax,ay);vx.clip();
+  vx.beginPath();vx.moveTo(bx,by);vx.lineTo(bx+cL*Math.cos(bA-fovR),by+cL*Math.sin(bA-fovR));
+  vx.arc(bx,by,cL,bA-fovR,bA+fovR);vx.lineTo(bx,by);
+  vx.fillStyle='rgba(255,220,60,0.06)';vx.fill();vx.restore();
+}
+
+function frame(){
+  sync();ensureStars();
+  const spd=parseFloat(document.getElementById('spd').value);
+  const fovR=parseFloat(document.getElementById('fov').value)*Math.PI/180;
+  const anti=sunAngle+Math.PI;
+  const er=ER(),cx=CX(),cy=CY(),w=W(),h=H();
+
+  if(!paused){
+    t+=spd*0.016;sunAngle=-Math.PI/2+t*0.008;
+    for(const o of objects){
+      o.ang+=o.spd*spd;
+      const[ox,oy]=getXY(o);o.trail.push([ox,oy]);if(o.trail.length>60)o.trail.shift();
+    }
+  }
+
+  const[ax,ay,,aR]=getSatA(),[bx,by,,bR]=getSatB();
+  const aS=inShad(ax,ay),bS=inShad(bx,by);
+  const baseline=Math.hypot(ax-bx,ay-by)*4.5;
+  const sunDist=Math.min(w,h)*0.44;
+  const sunX=cx+Math.cos(sunAngle)*sunDist,sunY=cy+Math.sin(sunAngle)*sunDist;
+
+  vx.fillStyle='#000205';vx.fillRect(0,0,w,h);
+  stars.forEach(([x,y,r,b2])=>{vx.beginPath();vx.arc(x,y,r,0,Math.PI*2);vx.fillStyle='rgba(255,255,255,'+(0.2+b2*0.5)+')';vx.fill();});
+
+  const bg=vx.createRadialGradient(sunX,sunY,0,sunX,sunY,w*0.18);
+  bg.addColorStop(0,'rgba(255,220,80,0.13)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  vx.beginPath();vx.arc(sunX,sunY,w*0.18,0,Math.PI*2);vx.fillStyle=bg;vx.fill();
+
+  drawSolarZone(sunX,sunY);
+
+  {const sax=Math.cos(anti),say=Math.sin(anti),px=-say,py=sax,sL=w*0.8;
+  vx.beginPath();vx.moveTo(cx+px*er,cy+py*er);
+  vx.lineTo(cx+sax*sL+px*(er*1.22),cy+say*sL+py*(er*1.22));
+  vx.lineTo(cx+sax*sL-px*(er*1.22),cy+say*sL-py*(er*1.22));
+  vx.lineTo(cx-px*er,cy-py*er);vx.closePath();
+  const sc=vx.createLinearGradient(cx,cy,cx+sax*sL,cy+say*sL);
+  sc.addColorStop(0,'rgba(0,2,15,0.65)');sc.addColorStop(0.4,'rgba(0,2,15,0.35)');sc.addColorStop(1,'rgba(0,2,15,0)');
+  vx.fillStyle=sc;vx.fill();}
+
+  {const tx=Math.cos(sunAngle+Math.PI/2),ty=Math.sin(sunAngle+Math.PI/2);
+  vx.save();vx.setLineDash([4,6]);
+  vx.beginPath();vx.moveTo(cx+tx*w*0.5,cy+ty*w*0.5);vx.lineTo(cx-tx*w*0.5,cy-ty*w*0.5);
+  vx.strokeStyle='rgba(120,200,255,0.18)';vx.lineWidth=1;vx.stroke();vx.setLineDash([]);vx.restore();
+  vx.fillStyle='rgba(120,200,255,0.28)';vx.font='10px monospace';
+  vx.fillText('TERMINADORA',cx+tx*w*0.34+4,cy+ty*w*0.34+3);}
+
+  if(showTri)drawOverlap(ax,ay,anti,bx,by,anti,fovR);
+  drawCone(ax,ay,anti,fovR,'rgba(68,170,255,0.04)','rgba(68,170,255,0.22)','rgba(68,170,255,0.3)');
+  drawCone(bx,by,anti,fovR,'rgba(255,136,170,0.04)','rgba(255,136,170,0.22)','rgba(255,136,170,0.3)');
+
+  vx.save();vx.setLineDash([3,5]);
+  vx.beginPath();vx.moveTo(ax,ay);vx.lineTo(bx,by);
+  vx.strokeStyle='rgba(200,200,200,0.13)';vx.lineWidth=0.8;vx.stroke();vx.setLineDash([]);vx.restore();
+
+  {const eg=vx.createRadialGradient(cx-er*0.14,cy-er*0.14,er*0.1,cx,cy,er);
+  eg.addColorStop(0,'#1a3a6a');eg.addColorStop(0.55,'#0d2244');eg.addColorStop(1,'#050f22');
+  vx.beginPath();vx.arc(cx,cy,er,0,Math.PI*2);vx.fillStyle=eg;vx.fill();
+  vx.beginPath();vx.arc(cx,cy,er,sunAngle-Math.PI/2,sunAngle+Math.PI/2);
+  vx.strokeStyle='rgba(80,140,255,0.4)';vx.lineWidth=er*0.038;vx.stroke();
+  const atm=vx.createRadialGradient(cx,cy,er,cx,cy,er*1.2);
+  atm.addColorStop(0,'rgba(60,140,255,0.22)');atm.addColorStop(1,'rgba(60,140,255,0)');
+  vx.beginPath();vx.arc(cx,cy,er*1.2,0,Math.PI*2);vx.fillStyle=atm;vx.fill();}
+
+  const sr=Math.min(w,h)*0.024;
+  vx.beginPath();vx.arc(sunX,sunY,sr,0,Math.PI*2);vx.fillStyle='rgba(255,235,80,0.95)';vx.fill();
+  vx.beginPath();vx.arc(sunX,sunY,sr*0.68,0,Math.PI*2);vx.fillStyle='#fff8b0';vx.fill();
+  for(let i=0;i<8;i++){const ra=(i/8)*Math.PI*2;vx.beginPath();vx.moveTo(sunX+Math.cos(ra)*sr*1.2,sunY+Math.sin(ra)*sr*1.2);vx.lineTo(sunX+Math.cos(ra)*sr*1.85,sunY+Math.sin(ra)*sr*1.85);vx.strokeStyle='rgba(255,220,60,0.6)';vx.lineWidth=1.8;vx.stroke();}
+
+  let bothC=0,errS=0,errN=0;
+  for(const o of objects){
+    const illum=isIllum(o),inA=inFOV(o,ax,ay,anti,fovR),inB=inFOV(o,bx,by,anti,fovR);
+    const[ox,oy]=getXY(o);
+    if(showTrails&&o.trail.length>1){
+      for(let i=1;i<o.trail.length;i++){
+        const a=(i/o.trail.length)*(illum?0.36:0.06);
+        vx.beginPath();vx.moveTo(o.trail[i-1][0],o.trail[i-1][1]);vx.lineTo(o.trail[i][0],o.trail[i][1]);
+        vx.strokeStyle=illum?'rgba(255,140,50,'+a+')':'rgba(40,60,90,'+a+')';vx.lineWidth=0.7;vx.stroke();
+      }
+    }
+    if(illum){const gg=vx.createRadialGradient(ox,oy,0,ox,oy,o.sz*4);gg.addColorStop(0,'rgba(255,210,90,0.5)');gg.addColorStop(1,'rgba(255,210,90,0)');vx.beginPath();vx.arc(ox,oy,o.sz*4,0,Math.PI*2);vx.fillStyle=gg;vx.fill();}
+    if(inA&&inB&&illum&&showTri){
+      bothC++;
+      const aDx=ox-ax,aDy=oy-ay,bDx=ox-bx,bDy=oy-by;
+      const na=(Math.random()-0.5)*0.003,nb=(Math.random()-0.5)*0.003;
+      const aDxN=Math.cos(Math.atan2(aDy,aDx)+na),aDyN=Math.sin(Math.atan2(aDy,aDx)+na);
+      const bDxN=Math.cos(Math.atan2(bDy,bDx)+nb),bDyN=Math.sin(Math.atan2(bDy,bDx)+nb);
+      const inter=rayX(ax,ay,aDxN,aDyN,bx,by,bDxN,bDyN);
+      let ex=ox,ey=oy;if(inter){ex=inter[0];ey=inter[1];}
+      const pe=Math.hypot(ex-ox,ey-oy)*4.5*0.8;o.posErr=pe;errS+=pe;errN++;
+      vx.beginPath();vx.moveTo(ax,ay);vx.lineTo(ox,oy);vx.strokeStyle=o.triangulated?'rgba(68,170,255,0.55)':'rgba(68,170,255,0.18)';vx.lineWidth=o.triangulated?1:0.65;vx.stroke();
+      vx.beginPath();vx.moveTo(bx,by);vx.lineTo(ox,oy);vx.strokeStyle=o.triangulated?'rgba(255,136,170,0.55)':'rgba(255,136,170,0.18)';vx.lineWidth=o.triangulated?1:0.65;vx.stroke();
+      if(inter){vx.beginPath();vx.moveTo(ex-6,ey);vx.lineTo(ex+6,ey);vx.moveTo(ex,ey-6);vx.lineTo(ex,ey+6);vx.strokeStyle='rgba(255,220,60,0.75)';vx.lineWidth=1;vx.stroke();}
+      if(!paused){o.hitsAB++;if(o.hitsAB>=3&&!o.triangulated){o.triangulated=true;triangulated++;const ts=String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0');pushLog('<span style="color:rgba(255,255,255,0.35)">['+ts+']</span> <span style="color:#50d090">✓ '+o.id+'</span> <span style="color:rgba(255,255,255,0.4)">'+pe.toFixed(1)+' km</span>');}}
+    }
+    if(o.triangulated){
+      vx.beginPath();vx.arc(ox,oy,o.sz+2.5,0,Math.PI*2);vx.fillStyle='rgba(80,208,144,0.22)';vx.fill();
+      vx.beginPath();vx.arc(ox,oy,o.sz,0,Math.PI*2);vx.fillStyle='#50d090';vx.fill();
+      vx.strokeStyle='rgba(80,208,144,0.6)';vx.lineWidth=0.8;vx.strokeRect(ox-7,oy-7,14,14);
+    } else if(inA&&inB&&illum){
+      vx.beginPath();vx.arc(ox,oy,o.sz,0,Math.PI*2);vx.fillStyle='#ffcc44';vx.fill();
+    } else {
+      vx.beginPath();vx.arc(ox,oy,o.sz,0,Math.PI*2);vx.fillStyle=illum?'#ff9944':'#182030';vx.fill();
+    }
+  }
+
+  drawSat(ax,ay,anti,'A','SAT-A');drawSat(bx,by,anti,'B','SAT-B');
+  vx.beginPath();vx.arc(cx,cy,aR,0,Math.PI*2);vx.strokeStyle='rgba(68,170,255,0.05)';vx.lineWidth=0.7;vx.stroke();
+  vx.beginPath();vx.arc(cx,cy,bR,0,Math.PI*2);vx.strokeStyle='rgba(255,136,170,0.05)';vx.lineWidth=0.7;vx.stroke();
+
+  if(mouseIn){
+    vx.save();vx.strokeStyle='rgba(255,220,60,0.2)';vx.lineWidth=0.6;vx.setLineDash([3,4]);
+    vx.beginPath();vx.moveTo(mouseX,0);vx.lineTo(mouseX,h);vx.stroke();
+    vx.beginPath();vx.moveTo(0,mouseY);vx.lineTo(w,mouseY);vx.stroke();
+    vx.setLineDash([]);vx.strokeStyle='rgba(255,220,60,0.45)';vx.lineWidth=0.9;
+    vx.beginPath();vx.arc(mouseX,mouseY,4,0,Math.PI*2);vx.stroke();vx.restore();
+  }
+  drawZoom();
+
+  const mm=String(Math.floor(t/60)).padStart(2,'0'),ss=String(Math.floor(t%60)).padStart(2,'0');
+  document.getElementById('h-time').textContent=mm+':'+ss;
+  const sha=document.getElementById('h-sha');sha.textContent=aS?'● SOMBRA':'○ LUZ';sha.className=aS?'hud-sat1':'hud-hot';
+  const shb=document.getElementById('h-shb');shb.textContent=bS?'● SOMBRA':'○ LUZ';shb.className=bS?'hud-sat2':'hud-hot';
+  document.getElementById('h-base').textContent=baseline.toFixed(0)+' km';
+  document.getElementById('h-both').textContent=bothC;
+  document.getElementById('h-tri').textContent=triangulated;
+  document.getElementById('h-err').textContent=errN>0?(errS/errN).toFixed(2)+' km':'--';
+
+  drawDets(objects,ax,ay,bx,by,anti,fovR);
+  requestAnimationFrame(frame);
+}
+
+function drawDet(el,satX,satY,axis,fovR,color,objs){
+  const DW=el.parentElement.clientWidth||300,DH=el.parentElement.clientHeight||78;
+  el.width=DW;el.height=DH;
+  const c=el.getContext('2d');
+  c.fillStyle='#00030c';c.fillRect(0,0,DW,DH);
+  c.strokeStyle='rgba('+color+',0.06)';c.lineWidth=0.5;
+  for(let x=0;x<DW;x+=DW/12){c.beginPath();c.moveTo(x,0);c.lineTo(x,DH);c.stroke();}
+  for(let y=0;y<DH;y+=DH/3){c.beginPath();c.moveTo(0,y);c.lineTo(DW,y);c.stroke();}
+  c.strokeStyle='rgba('+color+',0.22)';c.lineWidth=0.85;
+  c.beginPath();c.moveTo(DW/2,0);c.lineTo(DW/2,DH);c.stroke();
+  c.beginPath();c.moveTo(0,DH/2);c.lineTo(DW,DH/2);c.stroke();
+  for(const o of objs){
+    const[ox,oy]=getXY(o),ddx=ox-satX,ddy=oy-satY,dist=Math.hypot(ddx,ddy);
+    const u=Math.sin(Math.atan2(ddy,ddx)-axis);
+    const detX=DW/2+(u/Math.sin(fovR))*(DW/2-14),detY=DH/2+(Math.random()-0.5)*2;
+    const snr=Math.min(1,(o.sz*9)/Math.max(1,dist*0.038)/18),r=Math.max(1.2,o.sz*0.7);
+    const gg=c.createRadialGradient(detX,detY,0,detX,detY,r*5);
+    gg.addColorStop(0,'rgba(255,200,80,'+snr*0.85+')');gg.addColorStop(1,'rgba(255,200,80,0)');
+    c.beginPath();c.arc(detX,detY,r*5,0,Math.PI*2);c.fillStyle=gg;c.fill();
+    c.beginPath();c.arc(detX,detY,r,0,Math.PI*2);c.fillStyle=o.triangulated?'#50d090':'rgba(255,190,70,0.95)';c.fill();
+    c.beginPath();c.moveTo(detX-8,detY);c.lineTo(detX-1,detY);c.strokeStyle='rgba(255,190,70,'+(snr*0.28)+')';c.lineWidth=1;c.stroke();
+    if(o.triangulated){c.fillStyle='rgba(80,208,144,0.55)';c.font='7px monospace';c.fillText(o.id,detX+3,detY-3);}
+  }
+  if(!paused){const sy=DH*((t*26)%1);c.beginPath();c.moveTo(0,sy);c.lineTo(DW,sy);c.strokeStyle='rgba('+color+',0.09)';c.lineWidth=1.4;c.stroke();}
+  c.fillStyle='rgba('+color+',0.4)';c.font='8px monospace';
+  c.fillText(objs.length+' det.',5,DH-4);
+  c.fillText(objs.filter(o=>o.triangulated).length+' tri.',DW-32,DH-4);
+}
+function drawDets(objs,ax,ay,bx,by,anti,fovR){
+  drawDet(document.getElementById('det-a'),ax,ay,anti,fovR,'68,170,255',objs.filter(o=>isIllum(o)&&inFOV(o,ax,ay,anti,fovR)));
+  drawDet(document.getElementById('det-b'),bx,by,anti,fovR,'255,136,170',objs.filter(o=>isIllum(o)&&inFOV(o,bx,by,anti,fovR)));
+}
+frame();
+</script>
+</body>
+</html>
