@@ -6,6 +6,7 @@ author_profile: true
 
 ## Security
 - [Blue Team Junior Analyst](/assets/pdfs/Introduction-to-Digital-Forensics-course.pdf)
+- [Cisco Intro to cybersecurity](/assets/images/introduction-to-cybersecurity.png)
 
 ## Hacktoons
 - [HackSat 2026](/assets/pdfs/Diploma-Segundo-puesto-Vicente.png)
