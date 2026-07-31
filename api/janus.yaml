@@ -42,6 +42,53 @@ paths:
         '502':
           description: Bad provider response, suspicious JWT by provider.
 
+  /PassLogin:
+    post:
+      summary: PassLogin
+      description: Logs the user when checking the password hash against the stored hash, issues a session JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: {type: string, format: email}
+                password: {type: string, format: password}
+      responses:
+        '200':
+          description: Login successful, JWT issued.
+        '400':
+          description: Bad format in the request/missing fields.
+        '401':
+          description: Invalid credentials.
+        '500':
+          description: Couldn't retrieve user from DB, Couldn't generate a JWT.
+
+  /PassSingup:
+    post:
+      summary: PassSingup
+      description: Creates a user in the DB, sending a 2FA code to the provided email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email: {type: string, format: email}
+                password: {type: string, format: password}
+                name: {type: string, format: name}
+      responses:
+        '200':
+          description: Sended a 2FA request to the user email.
+        '400':
+          description: Bad format in the request/missing fields.
+        '500':
+          description: Couldn't store a temp user in the 2FA DB, couldn't send an email, weak password.
+
 components:
   schemas:
     User: {}
