@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: backend-template
+  version: 1.0.0
+paths:
+  /OAuthLogin:
+    get:
+      summary: OAuthLogin
+      description: Send the user to the OAuth server, setting a "state" cookie, after that is redirected to the OAuthCallback, if the user is not sign up, it creates and adhoc user if the email is not used.
+      responses:
+        '301':
+          description: Redirect to the OAuth provider.
+        '500':
+          description: Session didn't save, or auth URL generation failed.
+
+  /OAuthCallback:
+    get:
+      summary: OAuthCallback
+      description: Validates state token, exchanges auth code for tokens, verifies id_token, creates or logs in user, issues session JWT. The required fields are setted by OAuthLogin.
+      parameters:
+        - name: state
+          in: cookie
+          required: true
+          schema: {type: string}
+        - name: code
+          in: query
+          required: true
+          schema: {type: string}
+        - name: state
+          in: query
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: User authenticated, session issued.
+        '400':
+          description: Missing/mismatched state, missing code, missing claims, user creation failed.
+        '401':
+          description: Missing state cookie, invalid id_token.
+        '500':
+          description: Session save failed.
+        '502':
+          description: Bad provider response, suspicious JWT by provider.
+
+components:
+  schemas:
+    User: {}
+    Error: {}
