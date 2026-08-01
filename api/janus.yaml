@@ -2,6 +2,16 @@ openapi: 3.0.3
 info:
   title: backend-template
   version: 1.0.0
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+
 paths:
   /OAuthLogin:
     get:
@@ -66,10 +76,10 @@ paths:
         '500':
           description: Couldn't retrieve user from DB, Couldn't generate a JWT.
 
-  /PassSingup:
+  /PassSignup:
     post:
-      summary: PassSingup
-      description: Creates a user in the DB, sending a 2FA code to the provided email.
+      summary: PassSignup
+      description: Creates a tmp user in the 2FA table, sending a 2FA code to the provided email.
       requestBody:
         required: true
         content:
@@ -87,9 +97,129 @@ paths:
         '400':
           description: Bad format in the request/missing fields.
         '500':
-          description: Couldn't store a temp user in the 2FA DB, couldn't send an email, weak password.
+          description: Couldn't store a temp user in the 2FA table, couldn't send an email, weak password.
 
-components:
-  schemas:
-    User: {}
-    Error: {}
+  /Validate_2FA/{id}:
+    post:
+      summary: Validate_2FA/{id}
+      description: Validate the 2FA tmp user and move the user to Users table. The ID is setted when launching the email, and embeded in the link.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Issue a JWT and move the user from the temp 2FA table, to the users table.
+        '500':
+          description: Couldn't retrieve user at the DB, user already exist, issue moving the user, Couldn't generate a JWT
+
+  /PassReset:
+    post:
+      summary: PassReset
+      description: Send a reset password to the email in the request, in the case the user dosen't exist it return still 200 but no email is sent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: {type: string, format: email}
+      responses:
+        '200':
+          description: Send a email for continuing the pass reset process, or fake sending a email.
+        '400':
+          description: Missing key data in the request as the email
+        '500':
+          description: Couln't retrieve data from the DB, couldn't send an email.
+
+  /Reset_pass_new/{id}:
+    post:
+      summary: Reset_pass_new/{id}
+      description: Check the id and email, and if they are correct sets the user password to newpass, if newpass is as strong as policy dictate. Id is injected into the reset_pass request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, newpass]
+              properties:
+                email: {type: string, format: email}
+                newpass: {type: string, format: password}
+      responses:
+        '200':
+          description: Password has been succesfully reseted.
+        '400':
+          description: Missing email, newpass, or the whole body. Mismatch between request email and id email.
+        '500':
+          description: Missing id token in the DB, Couldn't erase the id token from the DB, Weak password.
+
+  /Refresh:
+    post:
+      summary: Refresh
+      description: Refresh the JWT token.
+      responses:
+        '200':
+          description: Issues a new JWT.
+        '500':
+          description: JWT has expired.
+
+  /Public-key:
+    get:
+      summary: Public-key
+      description: Provide the public key, to ensure that the JWT is authentic by your services.
+      responses:
+        '200':
+          description: Provided the RS256 current public key.
+        '500':
+          description: Error retrieving the current public key.
+
+  /User/Profile:
+    get:
+      summary: User/Profile
+      description: Return a profile data, it need to be autorize by the JWT.
+      responses:
+        '200':
+          description: Send a body with the data.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [email, name, picture]
+                properties:
+                  email: {type: string, format: email}
+                  name: {type: string}
+                  picture: {type: string, format: uri}
+        '401':
+          description: Missing JWT.
+        '500':
+          description: User dosen't exist.
+      security:
+        - bearerAuth: []
+
+  /User/Logout:
+    get:
+      summary: User/Logout
+      description: deprecated.
+      responses:
+        '200':
+          description: deprecated
+      security:
+        - bearerAuth: []
+
+  /User/Erase_user:
+    delete:
+      summary: User/Erase_user
+      description: Erase a user from the DB.
+      responses:
+        '200':
+          description: User erased.
+        '401':
+          description: Missing claims in JWT.
+        '500':
+          description: Error erasing user.
+      security:
+        - bearerAuth: []
