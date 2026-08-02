@@ -10,8 +10,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
-
-
 paths:
   /OAuthLogin:
     get:
