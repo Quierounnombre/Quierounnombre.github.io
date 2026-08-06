@@ -100,7 +100,7 @@ paths:
   /Validate_2FA/{id}:
     post:
       summary: Validate_2FA/{id}
-      description: Validate the 2FA tmp user and move the user to Users table. The ID is setted when launching the email, and embeded in the link.
+      description: Validate the 2FA tmp user and move the user to Users table. The ID is setted when launching the email, and embeded in the page served, in the button on said page is inject the ID.
       parameters:
         - name: id
           in: path
